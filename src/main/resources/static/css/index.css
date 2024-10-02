@@ -1,0 +1,33 @@
+body {
+    font-family: Arial, sans-serif;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    vertical-align: top;
+}
+th {
+    background-color: #f4f4f4;
+}
+td {
+    height: 100px;
+}
+.calendar-day {
+    position: relative;
+}
+.day-number {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-weight: bold;
+}
+.post {
+    margin-top: 20px;
+    font-size: 12px;
+    text-align: left;
+}

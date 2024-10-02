@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Project</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <h1>일정표</h1>
+
+    <div class="board-search">
+        <!-- 작성자 및 수정일 조회 -->
+        <label for="author">작성자 검색</label>
+        <input type="text" id="author" placeholder="작성자를 입력하세요">
+
+        <label for="updateDate">수정일 검색</label>
+        <input type="date" id="updateDate" placeholder="YYYY-MM-DD">
+        <button id="searchByAuthorDate">작성자 및 수정일로 검색</button><br>
+
+        <!-- ID 조회 -->
+        <label for="calendarId">일정 ID 검색</label>
+        <input type="number" id="calendarId" placeholder="일정 ID를 입력하세요">
+        <button id="searchById">일정 ID로 검색</button>
+    </div>
+
+    <!-- 일정 목록 -->
+    <table>
+        <thead>
+        <tr>
+            <th>번호</th>
+            <th>작성자</th>
+            <th>To-do List</th>
+            <th>생성 날짜</th>
+            <th>수정 날짜</th>
+        </tr>
+        </thead>
+        <tbody id="calendarTableBody">
+        <!-- 데이터 뿌리는 영역 -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // 페이지 로딩 시 전체 데이터 출력
+    $(document).ready(function() {
+        renderAllCalendars();  // 전체 일정 데이터를 로드
+    });
+
+    // 전체 데이터를 가져와 화면에 출력 (전체 조회)
+    function renderAllCalendars() {
+        $.ajax({
+            url: '/api/lists',
+            method: 'GET',
+            success: function(data) {
+                renderTable(data);
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // 작성자 및 수정일로 데이터 필터링 후 화면에 출력
+    function renderByAuthorAndDate(author = "", updateDate = "") {
+        let url = '/api/lists';
+        let params = [];
+
+        if (author) {
+            params.push(`author=${author}`);
+        }
+        if (updateDate) {
+            params.push(`updateDate=${updateDate}`);
+        }
+
+        if (params.length > 0) {
+            url += `?${params.join('&')}`;
+        }
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function(data) {
+                renderTable(data);
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // ID로 조회 후 테이블에 렌더링 (단건 조회)
+    function renderById(calendarId) {
+        $.ajax({
+            url: `/api/lists/${calendarId}`,
+            method: 'GET',
+            success: function(data) {
+                renderTable([data]);
+            },
+            error: function(error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    // 데이터를 테이블에 랜더링
+    function renderTable(data) {
+        const tableBody = $('#calendarTableBody');
+        tableBody.empty();
+
+        // 수정일 기준 내림차순으로 정렬
+        data.sort((a, b) => new Date(b.updateDate) - new Date(a.updateDate));
+
+        data.forEach((calendar) => {
+            const row = `
+                <tr>
+                    <td>${calendar.id}</td>
+                    <td>${calendar.author}</td>
+                    <td>${calendar.todolist}</td>
+                    <td>${new Date(calendar.createDate).toLocaleString()}</td>
+                    <td>${new Date(calendar.updateDate).toLocaleString()}</td>
+                </tr>
+            `;
+            tableBody.append(row);
+        });
+    }
+
+    // 작성자 및 수정일 검색 버튼 클릭 시 데이터 로드
+    $('#searchByAuthorDate').on('click', function() {
+        const author = $('#author').val();
+        const updateDate = $('#updateDate').val();
+        renderByAuthorAndDate(author, updateDate);
+    });
+
+    // 일정 ID 검색 버튼 클릭 시 ID로 데이터 로드
+    $('#searchById').on('click', function() {
+        const calendarId = $('#calendarId').val();
+        if (calendarId) {
+            renderById(calendarId);
+        }
+    });
+</script>
+</body>
+</html>
