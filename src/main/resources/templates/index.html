@@ -23,7 +23,14 @@
         <!-- ID 조회 -->
         <label for="calendarId">일정 ID 검색</label>
         <input type="number" id="calendarId" placeholder="일정 ID를 입력하세요">
-        <button id="searchById">일정 ID로 검색</button>
+        <button id="searchById">일정 ID로 검색</button><br>
+
+        <!-- 일정 생성 -->
+        <button id="createCalendar">일정 생성</button>
+        <!-- 수정 -->
+        <button id="editCalendar">일정 수정</button>
+        <!-- 삭제 -->
+        <button id="deleteCalendar">일정 삭제</button>
     </div>
 
     <!-- 일정 목록 -->
@@ -141,6 +148,71 @@
             renderById(calendarId);
         }
     });
+
+    // 일정 생성
+    $('#createCalendar').on('click', function(){
+        const newCalendar = {
+            author: prompt("작성자 입력"),
+            todolist: prompt("할 일 입력"),
+            password: prompt("비밀번호 입력")
+        };
+
+        $.ajax({
+            url: '/api/calendar',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(newCalendar),
+            success: function(){
+                alert("일정이 생성되었습니다.");
+                renderAllCalendars();
+            },
+            error: function (error){
+                console.log('Error: ', error);
+            }
+        });
+    });
+
+    // 일정 수정
+    $('#editCalendar').on('click', function(){
+        const calendarId = prompt("수정할 id 입력");
+        const updateCalendar = {
+            todolist: prompt("새로운 할 일 입력"),
+            author: prompt("작성자 입력"),
+            password: prompt("비밀번호 입력")
+        };
+
+        $.ajax({
+            url: `/api/${calendarId}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(updateCalendar),
+            success: function(){
+                alert("일정이 수정되었습니다.");
+                renderAllCalendars();
+            },
+            error: function (error){
+                console.log('Error: ', error);
+            }
+        });
+    });
+
+    // 일정 삭제
+    $('#deleteCalendar').on('click', function (){
+        const calendarId = prompt("삭제할 id 입력");
+        const password = prompt("비밀번호 입력");
+
+        $.ajax({
+            url: `/api/${calendarId}?password=${password}`,
+            method: 'DELETE',
+            success: function (){
+                alert("일정이 삭제되었습니다.");
+                renderAllCalendars();
+            },
+            error: function(error) {
+                console.log('Error: ', error);
+            }
+        })
+    })
 </script>
 </body>
 </html>
